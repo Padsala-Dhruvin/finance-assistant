@@ -1,0 +1,43 @@
+{
+  "expenses": [
+    {
+      "id": 1,
+      "amount": 100.0,
+      "category": "Food",
+      "description": "food cost",
+      "date": "2025-08-21",
+      "timestamp": "2025-08-21T21:55:27.517363",
+      "ai_categorization": {
+        "suggested_category": "Food",
+        "confidence": 5.0,
+        "alternatives": []
+      }
+    },
+    {
+      "id": 2,
+      "amount": 17.0,
+      "category": "Other",
+      "description": "Hair cutting",
+      "date": "2025-08-21",
+      "timestamp": "2025-08-21T21:55:42.908542",
+      "ai_categorization": {
+        "suggested_category": "Other",
+        "confidence": 0.0,
+        "alternatives": []
+      }
+    },
+    {
+      "id": 3,
+      "amount": 30.0,
+      "category": "Entertainment",
+      "description": "Melo",
+      "date": "2025-08-21",
+      "timestamp": "2025-08-21T21:55:58.985632",
+      "ai_categorization": {
+        "suggested_category": "Other",
+        "confidence": 0.0,
+        "alternatives": []
+      }
+    }
+  ]
+}
