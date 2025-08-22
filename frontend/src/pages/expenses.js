@@ -12,7 +12,6 @@ export default function Expenses() {
   const [aiInsights, setAiInsights] = useState(null);
   const [healthScore, setHealthScore] = useState(null);
   const [suggestedCategory, setSuggestedCategory] = useState(null);
-  const [confidenceScore, setConfidenceScore] = useState(0);
   
 
   const categories = [

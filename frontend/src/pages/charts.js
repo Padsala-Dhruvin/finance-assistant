@@ -1,105 +1,57 @@
-import React, { useState, useEffect } from 'react';
-import { ClerkProvider, SignedIn, SignedOut, SignIn } from '@clerk/clerk-react';
+import { useState, useEffect, useCallback } from 'react';
+import { ClerkProvider, SignedIn, SignedOut, SignIn, SignUp } from '@clerk/clerk-react';
 import Chart from 'chart.js/auto';
 
 export default function Charts() {
   const [expenses, setExpenses] = useState([]);
-  const [chartInstance, setChartInstance] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch expenses from backend
-  const fetchExpenses = async () => {
-    try {
-      const response = await fetch('http://127.0.0.1:5000/expenses');
-      if (response.ok) {
-        const data = await response.json();
-        setExpenses(data);
-      }
-    } catch (error) {
-      console.error('Error fetching expenses:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const createCharts = useCallback(() => {
+    if (expenses.length === 0) return;
 
-  useEffect(() => {
-    fetchExpenses();
-  }, []);
+    // Destroy existing charts
+    const existingChart = Chart.getChart('expenseChart');
+    if (existingChart) {
+      existingChart.destroy();
+    }
+
+    // Calculate category totals
+    const categoryTotals = {};
+    expenses.forEach(expense => {
+      categoryTotals[expense.category] = (categoryTotals[expense.category] || 0) + expense.amount;
+    });
+
+    const ctx = document.getElementById('expenseChart');
+    if (ctx) {
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: Object.keys(categoryTotals),
+          datasets: [{
+            data: Object.values(categoryTotals),
+            backgroundColor: [
+              '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+              '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+    }
+  }, [expenses]);
 
   useEffect(() => {
     if (expenses.length > 0) {
       createCharts();
     }
   }, [expenses, createCharts]);
-
-  const createCharts = () => {
-    // Destroy existing chart
-    if (chartInstance) {
-      chartInstance.destroy();
-    }
-
-    // Prepare data for charts
-    const categoryData = {};
-    const monthlyData = {};
-
-    expenses.forEach(expense => {
-      // Category breakdown
-      const category = expense.category;
-      categoryData[category] = (categoryData[category] || 0) + expense.amount;
-
-      // Monthly breakdown
-      const month = new Date(expense.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-      monthlyData[month] = (monthlyData[month] || 0) + expense.amount;
-    });
-
-    // Create pie chart for categories
-    const ctx = document.getElementById('categoryChart');
-    if (ctx) {
-      const colors = [
-        '#dc3545', '#28a745', '#007bff', '#ffc107', 
-        '#17a2b8', '#6f42c1', '#fd7e14', '#20c997', '#6c757d'
-      ];
-
-      const newChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: Object.keys(categoryData),
-          datasets: [{
-            data: Object.values(categoryData),
-            backgroundColor: colors.slice(0, Object.keys(categoryData).length),
-            borderWidth: 2,
-            borderColor: '#ddd'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                color: '#333',
-                font: {
-                  size: 12
-                }
-              }
-            },
-            title: {
-              display: true,
-              text: 'Expenses by Category',
-              color: '#333',
-              font: {
-                size: 16,
-                weight: 'bold'
-              }
-            }
-          }
-        }
-      });
-
-      setChartInstance(newChart);
-    }
-  };
 
   const getCategoryColor = (category) => {
     const colors = {
@@ -234,7 +186,7 @@ export default function Charts() {
                 }}>
                   <h2 style={{ marginBottom: '1.5rem', textAlign: 'center', color: '#333' }}>📊 Category Distribution</h2>
                   <div style={{ height: '400px', position: 'relative' }}>
-                    <canvas id="categoryChart"></canvas>
+                    <canvas id="expenseChart"></canvas>
                   </div>
                 </div>
 
