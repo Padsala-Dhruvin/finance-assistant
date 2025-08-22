@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { ClerkProvider, SignedIn, SignedOut, SignIn } from '@clerk/clerk-react';
 
 export default function Budget() {
-  const [monthlyIncome, setMonthlyIncome] = useState('');
-  const [savingsTarget, setSavingsTarget] = useState(20);
-  const [fixedCosts, setFixedCosts] = useState({});
+  const [monthlyIncome, setMonthlyIncome] = useState(0);
+  const [savingsTarget, setSavingsTarget] = useState(0);
+  const [fixedCosts, setFixedCosts] = useState([]);
   const [budgetSummary, setBudgetSummary] = useState(null);
-  const [budgetAnalysis, setBudgetAnalysis] = useState(null);
   const [savingsRecommendations, setSavingsRecommendations] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [newFixedCost, setNewFixedCost] = useState({ category: '', amount: '', description: '' });
   const [showVariableExpenses, setShowVariableExpenses] = useState(false);
   const [variableExpenses, setVariableExpenses] = useState([]);
@@ -23,7 +22,6 @@ export default function Budget() {
   useEffect(() => {
     loadBudgetData();
     loadBudgetSummary();
-    loadBudgetAnalysis();
     loadSavingsRecommendations();
     loadInvestmentRecommendations();
     loadVariableExpenses();
@@ -35,21 +33,21 @@ export default function Budget() {
       const incomeResponse = await fetch('http://127.0.0.1:5000/budget/income');
       if (incomeResponse.ok) {
         const incomeData = await incomeResponse.json();
-        setMonthlyIncome(incomeData.monthly_income || '');
+        setMonthlyIncome(incomeData.monthly_income || 0);
       }
 
       // Load fixed costs
       const fixedCostsResponse = await fetch('http://127.0.0.1:5000/budget/fixed-costs');
       if (fixedCostsResponse.ok) {
         const fixedCostsData = await fixedCostsResponse.json();
-        setFixedCosts(fixedCostsData.fixed_costs || {});
+        setFixedCosts(fixedCostsData.fixed_costs || []);
       }
 
       // Load savings target
       const savingsResponse = await fetch('http://127.0.0.1:5000/budget/savings-target');
       if (savingsResponse.ok) {
         const savingsData = await savingsResponse.json();
-        setSavingsTarget((savingsData.savings_target || 0.2) * 100);
+        setSavingsTarget((savingsData.savings_target || 0) * 100);
       }
     } catch (error) {
       console.error('Error loading budget data:', error);
@@ -65,18 +63,6 @@ export default function Budget() {
       }
     } catch (error) {
       console.error('Error loading budget summary:', error);
-    }
-  };
-
-  const loadBudgetAnalysis = async () => {
-    try {
-      const response = await fetch('http://127.0.0.1:5000/budget/analysis?months=4');
-      if (response.ok) {
-        const data = await response.json();
-        setBudgetAnalysis(data);
-      }
-    } catch (error) {
-      console.error('Error loading budget analysis:', error);
     }
   };
 
@@ -211,7 +197,7 @@ export default function Budget() {
   };
 
   const removeFixedCost = async (category) => {
-    if (!confirm(`Are you sure you want to remove ${category}?`)) {
+    if (!window.confirm(`Are you sure you want to remove ${category}?`)) {
       return;
     }
 
@@ -502,7 +488,7 @@ export default function Budget() {
                       <input
                         type="number"
                         value={monthlyIncome}
-                        onChange={(e) => setMonthlyIncome(e.target.value)}
+                        onChange={(e) => setMonthlyIncome(parseFloat(e.target.value) || 0)}
                         placeholder="3000"
                         style={{
                           width: '100%',
@@ -691,16 +677,16 @@ export default function Budget() {
               {/* Fixed Costs List */}
               <div>
                 <h3 style={{ marginBottom: '1rem', color: '#333' }}>📋 Current Fixed Costs</h3>
-                {Object.keys(fixedCosts).length === 0 ? (
+                {fixedCosts.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
                     <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🏠</div>
                     <p>No fixed costs added yet. Add your first fixed cost above!</p>
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {Object.entries(fixedCosts).map(([category, costData]) => (
+                    {fixedCosts.map((cost, index) => (
                       <div
-                        key={category}
+                        key={index}
                         style={{
                           background: 'white',
                           padding: '1rem',
@@ -713,21 +699,21 @@ export default function Budget() {
                       >
                         <div>
                           <div style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#333' }}>
-                            {category}
+                            {cost.category}
                           </div>
-                          {costData.description && (
+                          {cost.description && (
                             <div style={{ color: '#666', fontSize: '0.9rem' }}>
-                              {costData.description}
+                              {cost.description}
                             </div>
                           )}
                         </div>
                         
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                           <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: '#333' }}>
-                            €{costData.amount.toFixed(2)}
+                            €{cost.amount.toFixed(2)}
                           </div>
                           <button
-                            onClick={() => removeFixedCost(category)}
+                            onClick={() => removeFixedCost(cost.category)}
                             disabled={loading}
                             style={{
                               background: '#dc3545',

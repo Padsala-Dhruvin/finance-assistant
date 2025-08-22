@@ -12,7 +12,7 @@ export default function Expenses() {
   const [aiInsights, setAiInsights] = useState(null);
   const [healthScore, setHealthScore] = useState(null);
   const [suggestedCategory, setSuggestedCategory] = useState(null);
-  const [showCategorySuggestions, setShowCategorySuggestions] = useState(false);
+  const [confidenceScore, setConfidenceScore] = useState(0);
   
 
   const categories = [
@@ -138,23 +138,6 @@ export default function Expenses() {
     } catch (error) {
       console.error('Error deleting expense:', error);
       alert('Failed to delete expense');
-    }
-  };
-
-  // Recategorize expense
-  const recategorizeExpense = async (id, newCategory) => {
-    try {
-      const response = await fetch(`http://127.0.0.1:5000/expenses/${id}/categorize`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category: newCategory })
-      });
-
-      if (response.ok) {
-        fetchExpenses(); // Refresh the list
-      }
-    } catch (error) {
-      console.error('Error recategorizing expense:', error);
     }
   };
 

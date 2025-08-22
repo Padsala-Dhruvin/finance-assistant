@@ -30,7 +30,7 @@ export default function Charts() {
     if (expenses.length > 0) {
       createCharts();
     }
-  }, [expenses]);
+  }, [expenses, createCharts]);
 
   const createCharts = () => {
     // Destroy existing chart
